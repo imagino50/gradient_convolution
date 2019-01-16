@@ -8,14 +8,7 @@
 """
 from skimage import data 
 from skimage import filters 
-import matplotlib.pyplot as plt 
 import numpy as np
-
-# Image Input 
-#image = data.camera() 
-#image = data.coins() 
-image = data.horse() 
-print ("image.shape: ", ', '.join(map(str, image.shape)))
 
 def compute_gradient(image):
 		""" Step 2: Find gradients
@@ -48,23 +41,6 @@ def compute_gradient(image):
 
 	return gradient_mag, gradient_dir
 	
-#edge_magnitues = (sob_x ** 2 + sobel_y ** 2) ** .5 
-#edges = filters.sobel(camera) 
-#gradient_dir = ((np.arctan(gy/gx))/np.pi) * 180 # radian to degree conversion 
-#Convert angles from radians to degrees.
-#rad2deg(Angle in radians)
-#Return the corresponding angle in degrees.
-#angle = np.rad2deg(angle) % 180
-
-"""Keep the edge angle of an image with a Magnitude minimum. """ 
-#MIN_MAG = 0.08 
-#edge_angles2 = np.copy(gradient_direction) 
-#edge_angles2[edge_magnitues < MIN_MAG] = 0 
-#edge_angles = np.multiply(dir, 180/math.pi) 
-	
-"""Convolve using the edge angle. """ 
-#print ("conv1.shape: ", ', '.join(map(str, conv1.shape)))
-
 
 #https://github.com/fubel/PyCannyEdge/blob/master/CannyEdge/core.py
 def supress_non_max(Gm, Gd, th=1.0):
@@ -73,23 +49,23 @@ def supress_non_max(Gm, Gd, th=1.0):
         Gm (Numpy ndarray): Gradient-intensed image to be processed
         Gd (Numpy ndarray): Gradient directions for each pixel in img  in the range [0, +180]
     Returns:
-        nms: Numpy ndarray of Non-maximum suppression
+        Gm_nms (Numpy ndarray): Non-maximum suppression from Gradient magnitude
     """
-	nms = np.copy(Gm)
+	Gm_nms = np.copy(Gm)
 	h,w = Gm.shape
 	#x-coordinates : horizontal edges
 	for x in range(1, w-1):
 		#y-coordinates : vertical edges
 		for y in range(1, h-1):      
 			if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): #angle = 0
-				if(Gm[y,x]<=Gm[y,x-1]) and (Gm[y,x]<=Gm[y,x+1]): nms[y,x]=0
+				if(Gm[y,x]<=Gm[y,x-1]) and (Gm[y,x]<=Gm[y,x+1]): Gm_nms[y,x]=0
 			if (Gd[y,x]>22.5 and Gd[y,x]<=67.5): #angle = 45
-				if(Gm[y,x]<=Gm[y-1,x+1]) and (Gm[y,x]<=Gm[y+1,x-1]): nms[y,x]=0
+				if(Gm[y,x]<=Gm[y-1,x+1]) and (Gm[y,x]<=Gm[y+1,x-1]): Gm_nms[y,x]=0
 			if (Gd[y,x]>67.5 and Gd[y,x]<=112.5): #angle = 90
-				if(Gm[y,x]<=Gm[y-1,x]) and (Gm[y,x]<=Gm[y+1,x]): nms[y,x]=0
+				if(Gm[y,x]<=Gm[y-1,x]) and (Gm[y,x]<=Gm[y+1,x]): Gm_nms[y,x]=0
 			if (Gd[y,x]>112.5 and Gd[y,x]<=157.5): #angle = 135
-				if(Gm[y,x]<=Gm[y-1,x+1]) and (Gm[y,x]<=Gm[y+1,x-1]): nms[y,x]=0
-	return nms
+				if(Gm[y,x]<=Gm[y-1,x+1]) and (Gm[y,x]<=Gm[y+1,x-1]): Gm_nms[y,x]=0
+	return Gm_nms
 			
 			
 
