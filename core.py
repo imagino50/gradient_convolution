@@ -10,7 +10,7 @@ from skimage import data
 from skimage import filters 
 import numpy as np
 
-### TODO : Padding + maxnonsuppres 5*5 + cross edge detection
+### TODO : Padding + cross edge detection
 
 def compute_gradient(image):
 		""" Step 2: Find gradients
@@ -75,7 +75,7 @@ def supress_non_max(Gm, Gd, scan_dim=2, thres=1.0):
 			
 	return Gm_nms
 
-
+#TO DO : features map
 def detecte_lines(Gm, Gd, scan_dim=2, thres=1.0, y, x):
     """Step 4: Detecte lines over the image using `Gradient Direction` and `Gradient Magnitude`.
     Args:
