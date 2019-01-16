@@ -10,6 +10,8 @@ from skimage import data
 from skimage import filters 
 import numpy as np
 
+### TODO : Padding + maxnonsuppres 5*5 + cross edge detection
+
 def compute_gradient(image):
 		""" Step 2: Find gradients
 		Args:
@@ -40,10 +42,9 @@ def compute_gradient(image):
 	gradient_dir[gradient_dir<0] += 180
 
 	return gradient_mag, gradient_dir
-	
 
 #https://github.com/fubel/PyCannyEdge/blob/master/CannyEdge/core.py
-def supress_non_max(Gm, Gd, th=1.0):
+def supress_non_max(Gm, Gd, scan_dim=2, th=1.0):
     """ Step 3: Non-maximum suppression
     Args:
         Gm (Numpy ndarray): Gradient-intensed image to be processed
@@ -56,49 +57,25 @@ def supress_non_max(Gm, Gd, th=1.0):
 	#x-coordinates : horizontal edges
 	for x in range(1, w-1):
 		#y-coordinates : vertical edges
-		for y in range(1, h-1):      
-			if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): #angle = 0
-				if(Gm[y,x]<=Gm[y,x-1]) and (Gm[y,x]<=Gm[y,x+1]): Gm_nms[y,x]=0
-			if (Gd[y,x]>22.5 and Gd[y,x]<=67.5): #angle = 45
-				if(Gm[y,x]<=Gm[y-1,x+1]) and (Gm[y,x]<=Gm[y+1,x-1]): Gm_nms[y,x]=0
-			if (Gd[y,x]>67.5 and Gd[y,x]<=112.5): #angle = 90
-				if(Gm[y,x]<=Gm[y-1,x]) and (Gm[y,x]<=Gm[y+1,x]): Gm_nms[y,x]=0
-			if (Gd[y,x]>112.5 and Gd[y,x]<=157.5): #angle = 135
-				if(Gm[y,x]<=Gm[y-1,x+1]) and (Gm[y,x]<=Gm[y+1,x-1]): Gm_nms[y,x]=0
+		for y in range(1, h-1):
+			#angle = 0
+			if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): dx, dy = 0, -1
+			
+			#angle = 45
+			if (Gd[y,x]>22.5 and Gd[y,x]<=67.5): dx, dy = -1, 1
+		
+			#angle = 90
+			if (Gd[y,x]>67.5 and Gd[y,x]<=112.5): dx, dy = -1, 0
+				
+			#angle = 135
+			if (Gd[y,x]>112.5 and Gd[y,x]<=157.5): dx, dy = -1, -1
+			
+			for i in range(1, scan_dim):
+				if Gm[y,x] <= Gm[y+dy*i,x+dx*i] and Gm[y,x] <= Gm[y-dy*i,x-dx*i]: Gm_nms[y,x]=0
+			
 	return Gm_nms
-			
-			
-
-## nonmaximum suppression
-# Gm: gradient magnitudes
-# Gd: gradient directions, -pi/2 to +pi/2
-# return: nms, gradient magnitude if local max, 0 otherwise
-def nonmaxsupress(Gm, Gd, th=1.0):
-	#Gd: [-pi/2, +pi/2]
-	#Gd[Gd > 0.5*numpy.pi] -= numpy.pi
-    #Gd[Gd < -0.5*numpy.pi] += numpy.pi
-	
-    nms = zeros(Gm.shape, Gm.dtype)   
-    h,w = Gm.shape    
-    for x in range(1, w-1):
-        for y in range(1, h-1):            
-            mag = Gm[y,x]
-            if mag < th: continue        
-            teta = Gd[y,x]            
-            dx, dy = 0, -1      # abs(orient) >= 1.1781, teta < -67.5 degrees and teta > 67.5 degrees
-            if abs(teta) <= 0.3927: dx, dy = 1, 0       # -22.5 <= teta <= 22.5
-            elif teta < 1.1781 and teta > 0.3927: dx, dy = 1, 1     # 22.5 < teta < 67.5 degrees
-            elif teta > -1.1781 and teta < -0.3927: dx, dy = 1, -1  # -67.5 < teta < -22.5 degrees            
-            if mag > Gm[y+dy,x+dx] and mag > Gm[y-dy,x-dx]: nms[y,x] = mag    
-			#if mag > Gm[y+dy,x+dx] and mag > Gm[y-dy,x-dx] and mag > Gm[y+dy*2,x+dx*2] and mag > Gm[y-dy*2,x-dx*2]: nms[y,x] = mag
-			#for i in range(1, scan_dim):
-			 #if mag =< Gm[y+dy*i,x+dx*1] or mag =< Gm[y-dy*i,x-dx*i]:
-			  
-			  
-    return nms
 
 
-# TODO : Padding + maxnonsuppres 5*5 + cross edge detection
 def detecte_lines(Gm, Gd, scan_dim=2, th=1.0, y, x):
     """Step 4: Detecte lines over the image using `Gradient Direction` and `Gradient Magnitude`.
     Args:
@@ -112,6 +89,9 @@ def detecte_lines(Gm, Gd, scan_dim=2, th=1.0, y, x):
         int: The Features map.
     """
 	h,w = Gm.shape   
+	
+	#y-coordinates : vertical edges
+	#x-coordinates : horizontal edges
 	mag = Gm[y,x]  
 	
 	#angle = 0 
