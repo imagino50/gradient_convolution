@@ -44,7 +44,7 @@ def compute_gradient(image):
 	return gradient_mag, gradient_dir
 
 #https://github.com/fubel/PyCannyEdge/blob/master/CannyEdge/core.py
-def supress_non_max(Gm, Gd, scan_dim=2, th=1.0):
+def supress_non_max(Gm, Gd, scan_dim=2, thres=1.0):
     """ Step 3: Non-maximum suppression
     Args:
         Gm (Numpy ndarray): Gradient-intensed image to be processed
@@ -59,16 +59,16 @@ def supress_non_max(Gm, Gd, scan_dim=2, th=1.0):
 		#y-coordinates : vertical edges
 		for y in range(1, h-1):
 			#angle = 0
-			if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): dx, dy = 0, -1
+			if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): dy, dx = 0, -1
 			
 			#angle = 45
-			if (Gd[y,x]>22.5 and Gd[y,x]<=67.5): dx, dy = -1, 1
+			if (Gd[y,x]>22.5 and Gd[y,x]<=67.5): dy, dx = -1, 1
 		
 			#angle = 90
-			if (Gd[y,x]>67.5 and Gd[y,x]<=112.5): dx, dy = -1, 0
+			if (Gd[y,x]>67.5 and Gd[y,x]<=112.5): dy, dx = -1, 0
 				
 			#angle = 135
-			if (Gd[y,x]>112.5 and Gd[y,x]<=157.5): dx, dy = -1, -1
+			if (Gd[y,x]>112.5 and Gd[y,x]<=157.5): dy, dx = -1, -1
 			
 			for i in range(1, scan_dim):
 				if Gm[y,x] <= Gm[y+dy*i,x+dx*i] and Gm[y,x] <= Gm[y-dy*i,x-dx*i]: Gm_nms[y,x]=0
@@ -76,7 +76,7 @@ def supress_non_max(Gm, Gd, scan_dim=2, th=1.0):
 	return Gm_nms
 
 
-def detecte_lines(Gm, Gd, scan_dim=2, th=1.0, y, x):
+def detecte_lines(Gm, Gd, scan_dim=2, thres=1.0, y, x):
     """Step 4: Detecte lines over the image using `Gradient Direction` and `Gradient Magnitude`.
     Args:
         param1 (int): The Gradient Magnitude of the image.
@@ -96,68 +96,68 @@ def detecte_lines(Gm, Gd, scan_dim=2, th=1.0, y, x):
 	
 	#angle = 0 
 	if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): 
-	  dx, dy = 0, -1 # +90 & -90
+	  dy, dx = -1, 0 # +90 & -90
 	  if(y + scan_dim < h)
 	    for i in range(1, scan_dim):
-	      if(Gm[y+dy*i,x+dx*i]<th or (Gd[y+dy*i,x+dx*i]>22.5 and Gd[y+dy*i,x+dx*i]=<157.5))
+	      if(Gm[y+dy*i,x+dx*i]<thres or (Gd[y+dy*i,x+dx*i]>22.5 and Gd[y+dy*i,x+dx*i]=<157.5))
 	  	    nn = false
 	      else 
 	        nn = false
       
 	  if(y - scan_dim => 0)
 	   for i in range(1, scan_dim):
-	    if(Gm[y-dy*i,x-dx*i]<th or (Gd[y-dy*i,x-dx*i]>22.5 and Gd[y-dy*i,x-dx*i]=<157.5))
+	    if(Gm[y-dy*i,x-dx*i]<thres or (Gd[y-dy*i,x-dx*i]>22.5 and Gd[y-dy*i,x-dx*i]=<157.5))
 	  	ss = false   
 	  else 
 	   ss = false
 	
 	#angle = 45
 	if (Gd[y,x]>22.5 and Gd[y,x]<=67.5):  
-	  dx, dy = -1, -1 # +135 & -45
+	  dy, dx = -1, -1 # +135 & -45
 	  if(x + scan_dim < w) and (y - scan_dim => 0)  
 	   for i in range(1, scan_dim):
-	    if(Gm[y+dy*i,x+dx*i]<th or (Gd[y+dy*i,x+dx*i]=<22.5 and Gd[y+dy*i,x+dx*i]>67.5))
+	    if(Gm[y+dy*i,x+dx*i]<thres or (Gd[y+dy*i,x+dx*i]=<22.5 and Gd[y+dy*i,x+dx*i]>67.5))
 	  	nw = false
 	  else 
 	   nw = false
       
 	  if(x - scan_dim => 0) and (y + scan_dim < h) 
 	   for i in range(1, scan_dim):
-	    if(Gm[y-dy*i,x-dx*i]<th or (Gd[y-dy*i,x-dx*i]=<22.5 and Gd[y-dy*i,x-dx*i]>67.5))
+	    if(Gm[y-dy*i,x-dx*i]<thres or (Gd[y-dy*i,x-dx*i]=<22.5 and Gd[y-dy*i,x-dx*i]>67.5))
 	  	se = false   
 	  else 
 	   se = false
 	
 	#angle = 90
 	if (Gd[y,x]>67.5 and Gd[y,x]<=112.5):  
-	  dx, dy = -1, 0 # +180 & 0
+	  dy, dx = 0, -1 # +180 & 0 
 	  if(x + scan_dim < w) 
 	   for i in range(1, scan_dim):
-	    if(Gm[y+dy*i,x+dx*i]<th or (Gd[y+dy*i,x+dx*i]=>67.5 and Gd[y+dy*i,x+dx*i]>112.5))
+	    if(Gm[y+dy*i,x+dx*i]<thres or (Gd[y+dy*i,x+dx*i]=>67.5 and Gd[y+dy*i,x+dx*i]>112.5))
 	  	ww = false
 	  else 
 	   ww = false
       
 	  if(x - scan_dim => 0) 
 	   for i in range(1, scan_dim):
-	    if(Gm[y-dy*i,x-dx*i]<th or (Gd[y-dy*i,x-dx*i]=>67.5 and Gd[y-dy*i,x-dx*i]>112.5))
+	    if(Gm[y-dy*i,x-dx*i]<thres or (Gd[y-dy*i,x-dx*i]=>67.5 and Gd[y-dy*i,x-dx*i]>112.5))
 	  	ee = false   
 	  else 
 	   ee = false
 	
 	#angle = 135
 	if (Gd[y,x]>112.5 and Gd[y,x]<=157.5):  
-	  dx, dy = 1, -1 # +45 & -135
+	  dy, dx = -1, 1 # +45 & -135
 	  if(x + scan_dim < w) and (y - scan_dim => 0)  
 	   for i in range(1, scan_dim):
-	    if(Gm[y+dy*i,x+dx*i]<th or (Gd[y+dy*i,x+dx*i]=<112.5 and Gd[y+dy*i,x+dx*i]>157.5))
+	    if(Gm[y+dy*i,x+dx*i]<thres or (Gd[y+dy*i,x+dx*i]=<112.5 and Gd[y+dy*i,x+dx*i]>157.5))
 	  	ne = false
 	  else 
 	   ne = false
       
 	  if(x - scan_dim => 0) and (y + scan_dim < h) 
 	   for i in range(1, scan_dim):
-	    if(Gm[y-dy*i,x-dx*i]<th or (Gd[y-dy*i,x-dx*i]=<112.5 and Gd[y-dy*i,x-dx*i]>157.5))
+	    if(Gm[y-dy*i,x-dx*i]<thres or (Gd[y-dy*i,x-dx*i]=<112.5 and Gd[y-dy*i,x-dx*i]>157.5))
 	  	sw = false   
 	  else 
 	   sw = false
@@ -166,7 +166,7 @@ def detecte_lines(Gm, Gd, scan_dim=2, th=1.0, y, x):
  
 	
 
-def convolve(image, Gm, Gd, stride=1, th=1.0):
+def convolve(image, Gm, Gd, stride=1, thres=1.0):
     """Step 5: Confolve `Gradient filter` over `image` using `stride`
 
     Args:
@@ -207,7 +207,7 @@ def convolve(image, Gm, Gd, stride=1, th=1.0):
                 #curr_region = image[:,curr_y:curr_y+filter_dim, curr_x:curr_x+filter_dim]
                 # Sum the result of multiplication between the current region and the current filter.
                 #feature_maps [curr_filter, featMap_y, featMap_x] = np.sum(filter[curr_filter] * curr_region) + bias[curr_filter]
-				feature_maps [curr_filter, featMap_y, featMap_x] = linesDetection(Gm,Gd,scan_dim,th,curr_y,curr_x)
+				feature_maps [curr_filter, featMap_y, featMap_x] = linesDetection(Gm,Gd,scan_dim,thres,curr_y,curr_x)
                 curr_x += stride
                 featMap_x += 1
             curr_y += stride
