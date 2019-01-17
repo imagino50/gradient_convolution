@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt 
+from core import *
 
 # Image Input 
 #image = data.camera() 
@@ -7,8 +8,8 @@ image = data.horse()
 print ("image.shape: ", ', '.join(map(str, image.shape)))
 
 Gm, Gd = compute_gradient(image)
-Gm_nms = supress_non_max(Gm, Gd, th=1.0):
-feature_maps = convolve(image, Gm_nms, Gd, stride=1, th=1.0):       
+Gm_nms = supress_non_max(Gm, Gd, scan_dim=2, thres=1.0)
+feature_maps = convolve(image, Gm_nms, Gd, stride=1, thres=1.0) 
             
 plt.figure("SOBEL EDGES DETECTION") 
 plt.subplot(1,4,1) 
