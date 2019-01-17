@@ -1,5 +1,4 @@
-
-        """ Edge Detection is based on the following five steps:
+""" Edge Detection is based on the following five steps:
     1. Gaussian filter
     2. Gradient Intensity
     3. Non-maximum suppression
