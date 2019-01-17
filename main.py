@@ -8,7 +8,7 @@ image = data.horse()
 print ("image.shape: ", ', '.join(map(str, image.shape)))
 
 Gm, Gd = compute_gradient(image)
-Gm_nms = supress_non_max(Gm, Gd, scan_dim=2, thres=0.8)
+Gm_nms = supress_non_max(Gm, Gd, scan_dim=2, thres=0.4)
 feature_maps = convolve(image, Gm_nms, Gd, stride=1, thres=0.8) 
             
 plt.figure("SOBEL EDGES DETECTION") 

@@ -33,13 +33,13 @@ def compute_gradient(image):
     ##Find the edge angle of an image using the Sobel transform. """ 
     #arctan2(y-coordinates,x-coordinates)
     #Return an array of angles in radians in the range [-pi, pi]. 
-    angleRad = np.arctan2(sob_v, sob_h) # Counterclockwise 
+    angleRad = np.arctan2(sob_h, sob_v) # Counterclockwise 
 
-    #Convert angles from radians to degrees.
-    gradient_dir = np.rad2deg(angleRad)
+    #Convert angles from radians to degrees. Input angle must be in [0,180]
+    gradient_dir = np.rad2deg(angleRad) % 180
 
     #Convert an array of angles in degrees in the range [0, +180]. 
-    gradient_dir[gradient_dir<0] += 180
+    #gradient_dir[gradient_dir<0] += 180
 
     return gradient_mag, gradient_dir
 
@@ -55,9 +55,13 @@ def supress_non_max(Gm, Gd, scan_dim, thres):
     Gm_nms = np.copy(Gm)
     h,w = Gm.shape
     #x-coordinates : horizontal edges
-    for x in range(1, w-1):
+    for x in range(scan_dim, w-scan_dim):
         #y-coordinates : vertical edges
-        for y in range(1, h-1):
+        for y in range(scan_dim, h-scan_dim):
+            mag = Gm[y,x]
+            if mag < thres: continue
+
+            print("Gm[%d,%d]=%f " % (y,x,mag))
             #angle = 0
             if (Gd[y,x]<=22.5 or Gd[y,x]>157.5): dy, dx = 0, -1
             
@@ -70,8 +74,11 @@ def supress_non_max(Gm, Gd, scan_dim, thres):
             #angle = 135
             if (Gd[y,x]>112.5 and Gd[y,x]<=157.5): dy, dx = -1, -1
             
-            for i in range(1, scan_dim):
-                if Gm[y,x] <= Gm[y+dy*i,x+dx*i] and Gm[y,x] <= Gm[y-dy*i,x-dx*i]: Gm_nms[y,x]=0
+            for i in range(1, scan_dim +1):
+             #print("i %d" % (i))
+             if mag <= Gm[y+dy*i,x+dx*i] and mag <= Gm[y-dy*i,x-dx*i]: 
+              Gm_nms[y,x]=0
+              print("Gm_nms[%d,%d]=0 " % (x,y))
 
     return Gm_nms
 
