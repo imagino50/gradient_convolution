@@ -90,8 +90,6 @@ def suppression(img, Gd):
     print("supress_non_max::h:%d,w:%d " % (M,N))
     Z = np.zeros((M,N), dtype=np.int32)
 
-    Gd = np.rad2deg(Gd) % 180
-
     for i in range(M):
         for j in range(N):
             # find neighbour pixels to visit from the gradient directions
@@ -295,19 +293,19 @@ def detecte_lines(Gm, Gd, scan_dim, thres, x, y):
     
     if vertical == True:
       moy_v = thres #sum_v / nb_items
-      print("x=%d,y=%d : vertical == True" %(x,y))
+      #print("x=%d,y=%d : vertical == True" %(x,y))
 
     if diag1 == True:
       moy_d1 = thres #sum_d1 / nb_items
-      print("x=%d,y=%d : diag1 == True" %(x,y))
+      #print("x=%d,y=%d : diag1 == True" %(x,y))
 
     if horizontal == True:
       moy_h = thres #sum_h / nb_items
-      print("x=%d,y=%d : horizontal == True" %(x,y))
+      #print("x=%d,y=%d : horizontal == True" %(x,y))
 
     if diag2 == True:
       moy_d2 = thres #sum_d2 / nb_items
-      print("x=%d,y=%d : diag2 == True" %(x,y))
+      #print("x=%d,y=%d : diag2 == True" %(x,y))
      
     return moy_v, moy_d1, moy_h, moy_d2
 
