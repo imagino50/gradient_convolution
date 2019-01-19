@@ -1,8 +1,10 @@
 from CannyEdge.utils import to_ndarray
 from CannyEdge.core import (gs_filter, 
-                            gradient_intensity, compute_gradient, 
+                            gradient_intensity, 
                             suppression, supress_non_max,
-                            threshold, tracking)
+                            threshold,
+                            convolve,
+                            tracking)
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,9 +36,9 @@ def ced(img_file, sigma, t, T, all=False):
         img1 = gs_filter(img, sigma)
         img2, D = gradient_intensity(img1)
         img3 = suppression(copy(img2), D)
-        img4, weak = threshold(copy(img3), t, T)
+        img4, weak, strong = threshold(copy(img3), t, T)
         img5 = tracking(copy(img4), weak)
-        return [to_ndarray(img_file), img1, img2, img3, img4, img5]
+        return [to_ndarray(img_file), img1, img2, D, img3, img4, img5]
 
 def ced2(img_file, sigma, t, T, all=False):
     img = to_ndarray(img_file)
@@ -51,20 +53,29 @@ def ced2(img_file, sigma, t, T, all=False):
     else:
         # make copies, step by step
         img1 = gs_filter(img, sigma)
-        img2, D = compute_gradient(img1) #OLD
-        img3 = supress_non_max(img2, D, 1, 1.0)#OLD
-        img4, weak = threshold(copy(img3), t, T)
-        img5 = tracking(copy(img4), weak)
-        return [to_ndarray(img_file), img1, img2, img3, img4, img5]
+        #img2, D = compute_gradient(img1) #NEW
+        Gm, Gd = gradient_intensity(img1)
+        GmNms = supress_non_max(Gm, Gd, 2, 1.0)#NEW
+        #img3 = suppression(copy(img2), Gd)
+        GmNmsThres, weak, strong = threshold(copy(GmNms), t, T)
+        feat = convolve(GmNmsThres, Gd, stride=1, thres=weak)
+        img6 = tracking(copy(GmNmsThres), weak)
+        #return [to_ndarray(img_file), img1, Gm, Gd, GmNms, GmNmsThres, feat[0], feat[1], feat[2], feat[3], img6]
+        return [to_ndarray(img_file), GmNmsThres, feat[0], feat[1], feat[2], feat[3], img6]
 
 def plot(img_list, img_list2, safe=False):
     for d, img in enumerate(img_list):
-        plt.subplot(2, len(img_list), d+1),
+        plt.subplot(3, len(img_list), d+1),
         plt.imshow(img, cmap='gray'),
         plt.xticks([]),
         plt.yticks([])
-    for d, img in enumerate(img_list2):
-        plt.subplot(2, len(img_list) , len(img_list) + d+1),
+    for d, img in enumerate(img_list2[0:len(img_list)]):
+        plt.subplot(3, len(img_list) , len(img_list) + d+1),
+        plt.imshow(img, cmap='gray'),
+        plt.xticks([]),
+        plt.yticks([])
+    for d, img in enumerate(img_list2[len(img_list):]):
+        plt.subplot(3, len(img_list) , len(img_list)*2 + d+1),
         plt.imshow(img, cmap='gray'),
         plt.xticks([]),
         plt.yticks([])
