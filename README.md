@@ -3,6 +3,7 @@ Python Gradient convolution
 
 Using  https://github.com/fubel/PyCannyEdgeWork to play with Canny edge detection.
 Still in progress !
+Ia m checking https://github.com/ikergarcia1996/Handwritten-Names-Recognition as well.
 
 Usage
 -----
